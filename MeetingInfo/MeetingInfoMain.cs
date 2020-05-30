@@ -6,7 +6,7 @@ using Microsoft.Office.Interop.Outlook;
 
 namespace MeetingInfo
 {
-    public partial class ThisAddIn
+    public partial class MeetingInfoMain
     {
 
         private readonly Ribbon _ribbon = new Ribbon();
@@ -38,7 +38,7 @@ namespace MeetingInfo
 
         public void CheckObject(Object selObject)
         {
-            //System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"D:\Downloads\fgth_welcome.wav");
+            //System.Media.SoundPlayer player = new System.Media.SoundPlayer(@"fgth_welcome.wav");
             //player.Play();
 
             if (selObject == null)
@@ -56,7 +56,8 @@ namespace MeetingInfo
                     String OptionalAttendees = apptItem.OptionalAttendees;
                     String RequiredAttendees = apptItem.RequiredAttendees;
                     String Organizer = apptItem.Organizer;
-                    SetLabel(apptItem.Subject); //max 1024 characters.
+                    SetLabel(apptItem.Subject, 1); //max 1024 characters.
+                    SetLabel(Organizer, 2);
                     return;
                 }
             }
@@ -68,29 +69,48 @@ namespace MeetingInfo
                 {
                     String RequiredAttendees = meetItem.Recipients[1].Address;
                     String Organizer = meetItem.SenderEmailAddress;
-                    SetLabel(meetItem.Subject); //max 1024 characters.
+                    SetLabel(meetItem.Subject, 1); //max 1024 characters.
+                    SetLabel(Organizer, 2);
                     return;
                 }
             }
             if (last_exec + 500 < new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds())
             {
-                SetLabel(null);
+                SetLabel(null, 1);
+                SetLabel(null, 2);
             }
         }
 
-        private void SetLabel(string text)
+        private void SetLabel(string text, int label_int)
         {
             if (!String.IsNullOrEmpty(text))
             {
-                _ribbon.Label = text;
+                switch (label_int)
+                {
+                    case 1:
+                        _ribbon.Label1 = text;
+                        break;
+                    case 2:
+                        _ribbon.Label2 = text;
+                        break;
+                }
+                
             }
             else
             {
-                _ribbon.Label = "no data found";
+                switch (label_int)
+                {
+                    case 1:
+                        _ribbon.Label1 = "no data found";
+                        break;
+                    case 2:
+                        _ribbon.Label2 = "no data found";
+                        break;
+                }
             }
         }
 
-        private void ThisAddIn_Startup(object sender, System.EventArgs e)
+        private void MeetingInfoMain_Startup(object sender, System.EventArgs e)
         {
             inspectors = this.Application.Inspectors;
             inspectors.NewInspector +=
@@ -102,7 +122,7 @@ namespace MeetingInfo
                 new ExplorersEvents_NewExplorerEventHandler(Explorers_NewExplorer);
         }
 
-        private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
+        private void MeetingInfoMain_Shutdown(object sender, System.EventArgs e)
         {
             // Hinweis: Outlook löst dieses Ereignis nicht mehr aus. Wenn Code vorhanden ist, der 
             //    muss ausgeführt werden, wenn Outlook heruntergefahren wird. Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?LinkId=506785.
@@ -116,8 +136,8 @@ namespace MeetingInfo
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(ThisAddIn_Startup);
-            this.Shutdown += new System.EventHandler(ThisAddIn_Shutdown);
+            this.Startup += new System.EventHandler(MeetingInfoMain_Startup);
+            this.Shutdown += new System.EventHandler(MeetingInfoMain_Shutdown);
         }
 
         #endregion

@@ -5,11 +5,13 @@
             <tab idMso="TabAppointment">
                 <group id="group1" label="Meeting">
                     <labelControl id="label1" getLabel="GetLabel" />
+                  <labelControl id="label11" getLabel="GetLabel" />
                 </group>
             </tab>
             <tab idMso="TabReadMessage">
                 <group id="group2" label="Meeting">
                     <labelControl id="label2" getLabel="GetLabel" />
+                  <labelControl id="label22" getLabel="GetLabel" />
                 </group>
             </tab>
         </tabs>

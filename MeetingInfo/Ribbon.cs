@@ -39,21 +39,41 @@ namespace MeetingInfo
             }
         }
 
-        private string _label = string.Empty;
-        public string Label
+        private string _label1 = string.Empty;
+        public string Label1
         {
             get
             {
-                if (this._label != string.Empty)
-                    return this._label;
+                if (this._label1 != string.Empty)
+                    return this._label1;
                 else
                     return "Default-text";
             }
             set
             {
-                if (this._label != value)
+                if (this._label1 != value)
                 {
-                    this._label = value;
+                    this._label1 = value;
+                    this.Invalidate();
+                }
+            }
+        }
+
+        private string _label2 = string.Empty;
+        public string Label2
+        {
+            get
+            {
+                if (this._label2 != string.Empty)
+                    return this._label2;
+                else
+                    return "Default-text";
+            }
+            set
+            {
+                if (this._label2 != value)
+                {
+                    this._label2 = value;
                     this.Invalidate();
                 }
             }
@@ -91,10 +111,15 @@ namespace MeetingInfo
         public string GetLabel(Office.IRibbonControl ribbonUI)
         {
             string[] first_labels = { "label1", "label2", "label3", "label4" };
+            string[] second_labels = { "label11", "label22", "label33", "label44" };
             if (first_labels.Contains(ribbonUI.Id.ToLower()))
             {
-                return this.Label;
-            } else {
+                return this.Label1;
+            } else if (second_labels.Contains(ribbonUI.Id.ToLower()))
+            {
+                return this.Label2;
+            } else 
+            {
                 return "default";
             }
         }
@@ -103,7 +128,7 @@ namespace MeetingInfo
         #region Hilfsprogramme
         private static void ErrorMessage(string errortext)
         {
-            System.Windows.Forms.MessageBox.Show("Error on [" + errortext + "] - Please deactivate this add-in (" + ThisAddIn.ADD_IN_NAME + ")");
+            System.Windows.Forms.MessageBox.Show("Error on [" + errortext + "] - Please deactivate this add-in (" + MeetingInfoMain.ADD_IN_NAME + ")");
         }
 
         private static string GetResourceText(string resourceName)

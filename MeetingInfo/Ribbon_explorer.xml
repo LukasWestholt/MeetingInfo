@@ -6,6 +6,7 @@
 				<tab idMso="TabAppointment">
 					<group id="group3" label="Meeting">
 						<labelControl id="label3" getLabel="GetLabel"/>
+            <labelControl id="label33" getLabel="GetLabel" />
 					</group>
 				</tab>
 			</tabSet>
@@ -13,6 +14,7 @@
 				<tab idMso="TabRecurringAppointment">
 					<group id="group4" label="Meeting">
 						<labelControl id="label4" getLabel="GetLabel"/>
+            <labelControl id="label44" getLabel="GetLabel" />
 					</group>
 				</tab>
 			</tabSet>

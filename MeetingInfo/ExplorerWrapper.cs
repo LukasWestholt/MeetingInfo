@@ -24,7 +24,7 @@ namespace MeetingInfo
             if (explorer.Selection.Count == 1 && last_exec + 250 < new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds())
             {
                 Object selObject = explorer.Selection[1];
-                Globals.ThisAddIn.CheckObject(selObject);
+                Globals.MeetingInfoMain.CheckObject(selObject);
                 last_exec = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             }
         }
@@ -36,7 +36,7 @@ namespace MeetingInfo
 
         void ExplorerWrapper_Close()
         {
-            Globals.ThisAddIn.ExplorerWrappers.Remove(explorer);
+            Globals.MeetingInfoMain.ExplorerWrappers.Remove(explorer);
             ((ExplorerEvents_Event)explorer).Close -=
                 new ExplorerEvents_CloseEventHandler(ExplorerWrapper_Close);
             ((ExplorerEvents_10_Event)explorer).Activate -=
