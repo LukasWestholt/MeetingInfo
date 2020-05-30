@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="OnRibbonLoaded">
+    <ribbon>
+		<contextualTabs>
+			<tabSet idMso="TabSetAppointment">
+				<tab idMso="TabAppointment">
+					<group id="group3" label="Meeting">
+						<labelControl id="label3" getLabel="GetLabel"/>
+					</group>
+				</tab>
+			</tabSet>
+			<tabSet idMso="TabSetReccurringAppointment">
+				<tab idMso="TabRecurringAppointment">
+					<group id="group4" label="Meeting">
+						<labelControl id="label4" getLabel="GetLabel"/>
+					</group>
+				</tab>
+			</tabSet>
+		</contextualTabs>
+    </ribbon>
+</customUI>
