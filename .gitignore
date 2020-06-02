@@ -1,5 +1,7 @@
 dx_sample/
 old-versions/
+things/
+Tests/
 *.docx
 Outlook-Anpassungen (olkexplorer).exportedUI
 
@@ -377,13 +379,6 @@ ehthumbs_vista.db
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
 
 # Windows shortcuts
 *.lnk

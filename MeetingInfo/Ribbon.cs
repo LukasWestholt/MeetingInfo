@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Office = Microsoft.Office.Core;
 
@@ -12,8 +13,26 @@ namespace MeetingInfo
     {
         private Office.IRibbonUI _ribbonUI;
 
+        public ElementWrapper Label1;
+        public ElementWrapper Label2;
+        public ElementWrapper Label3;
+        public ElementWrapper Label4;
+        private readonly Dictionary<string[], ElementWrapper> labels;
+
         public Ribbon()
         {
+            Label1 = new ElementWrapper(this);
+            Label2 = new ElementWrapper(this);
+            Label3 = new ElementWrapper(this);
+            Label4 = new ElementWrapper(this);
+
+            labels = new Dictionary<string[], ElementWrapper>()
+            {
+                { new []{ "label1", "label2", "label3", "label4" }, Label1 },
+                { new []{ "label11", "label22", "label33", "label44" }, Label2 },
+                { new []{ "label111", "label222", "label333", "label444" }, Label3 },
+                { new []{ "label1111", "label2222", "label3333", "label4444" }, Label4 }
+            };
         }
  
         public void Invalidate()
@@ -36,46 +55,6 @@ namespace MeetingInfo
             } else
             {
                 ErrorMessage("Invalidate");
-            }
-        }
-
-        private string _label1 = string.Empty;
-        public string Label1
-        {
-            get
-            {
-                if (this._label1 != string.Empty)
-                    return this._label1;
-                else
-                    return "Default-text";
-            }
-            set
-            {
-                if (this._label1 != value)
-                {
-                    this._label1 = value;
-                    this.Invalidate();
-                }
-            }
-        }
-
-        private string _label2 = string.Empty;
-        public string Label2
-        {
-            get
-            {
-                if (this._label2 != string.Empty)
-                    return this._label2;
-                else
-                    return "Default-text";
-            }
-            set
-            {
-                if (this._label2 != value)
-                {
-                    this._label2 = value;
-                    this.Invalidate();
-                }
             }
         }
 
@@ -104,28 +83,56 @@ namespace MeetingInfo
             this._ribbonUI = ribbonUI;
         }
 
-        public void ButtonTest(Office.IRibbonControl ribbonUI)
+        // TODO Button
+        public void OnButtonTest(Office.IRibbonControl ribbonUI)
         {
             System.Windows.Forms.MessageBox.Show("Hello!");
         }
-        public string GetLabel(Office.IRibbonControl ribbonUI)
+        public string OnGetLabel(Office.IRibbonControl ribbonUI)
         {
-            string[] first_labels = { "label1", "label2", "label3", "label4" };
-            string[] second_labels = { "label11", "label22", "label33", "label44" };
-            if (first_labels.Contains(ribbonUI.Id.ToLower()))
-            {
-                return this.Label1;
-            } else if (second_labels.Contains(ribbonUI.Id.ToLower()))
-            {
-                return this.Label2;
-            } else 
-            {
-                return "default";
-            }
+            ElementWrapper elem = GetElement(ribbonUI);
+            return elem != null ? elem.Label: MeetingInfoMain.DEFAULT_TEXT_LABEL;
         }
+
+        public string OnGetScreentip(Office.IRibbonControl ribbonUI)
+        {
+            ElementWrapper elem = GetElement(ribbonUI);
+            return elem != null ? elem.Screentip: MeetingInfoMain.DEFAULT_TEXT_SCREENTIP;
+        }
+
+        public bool OnGetVisible(Office.IRibbonControl ribbonUI)
+        {
+            ElementWrapper elem = GetElement(ribbonUI);
+            return elem != null ? elem.Visible: MeetingInfoMain.DEFAULT_STATE_VISIBLE;
+        }
+        public System.Drawing.Bitmap OnGetImage(Office.IRibbonControl ribbonUI)
+        {
+            ElementWrapper elem = GetElement(ribbonUI);
+            return elem.Image;
+        }
+
+        public bool OnGetShowImage(Office.IRibbonControl ribbonUI)
+        {
+            ElementWrapper elem = GetElement(ribbonUI);
+            return elem != null && elem.Image != null;
+        }
+
         #endregion
 
         #region Hilfsprogramme
+
+        private ElementWrapper GetElement(Office.IRibbonControl ribbonUI)
+        {
+            foreach (KeyValuePair<string[], ElementWrapper> entry in labels)
+            {
+                if (entry.Key.Contains(ribbonUI.Id.ToLower()))
+                {
+                    return entry.Value;
+                }
+            }
+            ErrorMessage("Unknown Element: " + ribbonUI.Id.ToLower());
+            return null;
+        }
         private static void ErrorMessage(string errortext)
         {
             System.Windows.Forms.MessageBox.Show("Error on [" + errortext + "] - Please deactivate this add-in (" + MeetingInfoMain.ADD_IN_NAME + ")");

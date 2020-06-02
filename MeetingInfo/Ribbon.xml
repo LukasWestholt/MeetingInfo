@@ -1,19 +1,23 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="OnRibbonLoaded">
-    <ribbon>
-		<tabs>
-            <tab idMso="TabAppointment">
-                <group id="group1" label="Meeting">
-                    <labelControl id="label1" getLabel="GetLabel" />
-                  <labelControl id="label11" getLabel="GetLabel" />
-                </group>
-            </tab>
-            <tab idMso="TabReadMessage">
-                <group id="group2" label="Meeting">
-                    <labelControl id="label2" getLabel="GetLabel" />
-                  <labelControl id="label22" getLabel="GetLabel" />
-                </group>
-            </tab>
-        </tabs>
-    </ribbon>
+  <ribbon>
+    <tabs>
+      <tab idMso="TabAppointment">
+        <group id="group1" label="Meeting">
+          <button id="label1" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label11" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label111" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label1111" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+        </group>
+      </tab>
+      <tab idMso="TabReadMessage">
+        <group id="group2" label="Meeting">
+          <button id="label2" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label22" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label222" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label2222" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
 </customUI>
