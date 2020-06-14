@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ACCEPT" xml:space="preserve">
+    <value>Annehmen</value>
+  </data>
   <data name="ACCEPTED" xml:space="preserve">
     <value>zugesagt</value>
   </data>
@@ -125,6 +128,9 @@
   </data>
   <data name="DECLINED" xml:space="preserve">
     <value>abgesagt</value>
+  </data>
+  <data name="DEVELOPED_BY" xml:space="preserve">
+    <value>entwickelt von</value>
   </data>
   <data name="ERROR" xml:space="preserve">
     <value>FEHLER</value>
@@ -135,6 +141,9 @@
   <data name="IS_NULL" xml:space="preserve">
     <value>ist null</value>
   </data>
+  <data name="NOT_FOUND_IN" xml:space="preserve">
+    <value>Nicht gefunden im</value>
+  </data>
   <data name="ON" xml:space="preserve">
     <value>bei</value>
   </data>
@@ -143,6 +152,9 @@
   </data>
   <data name="ORGANIZER" xml:space="preserve">
     <value>Organisator</value>
+  </data>
+  <data name="OUTDATED" xml:space="preserve">
+    <value>Veraltete</value>
   </data>
   <data name="PLEASE_DEACTIVATE_THIS_ADD-IN" xml:space="preserve">
     <value>Bitte deaktivieren Sie diesen Add-in</value>

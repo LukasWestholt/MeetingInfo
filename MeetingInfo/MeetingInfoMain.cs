@@ -3,30 +3,26 @@ using System.Collections.Generic;
 using Microsoft.Office.Core;
 using Microsoft.Office.Interop.Outlook;
 using System.Globalization;
+using System.Linq;
 
 namespace MeetingInfo
 {
     public partial class MeetingInfoMain
     {
-
-        // <div>Icons erstellt von <a href="https://smashicons.com/" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/de/" title="Flaticon">www.flaticon.com</a></div>
-        // <a target="_blank" href="https://icons8.de/icons/set/high-priority">Hohe Priorität icon</a> icon by <a target="_blank" href="https://icons8.de">Icons8</a>
-
-        // TODO settings width, language, credits
-
-        // TODO size large?
-
         // TODO meeting in mailinglist no ribbon problem
-
         // TODO BUILD https://docs.microsoft.com/de-de/visualstudio/vsto/deploying-a-vsto-solution-by-using-windows-installer?view=vs-2019
+        // TODO Im Kalender von Jahr zu Jahr "springen"
 
         private readonly Ribbon _ribbon = new Ribbon();
-        
+
         private Dictionary<int, ElementWrapper> labels = new Dictionary<int, ElementWrapper>();
 
+        // <-- must be document global (reason: garbage collector)
         private Inspectors inspectors;
         private Explorers explorers;
-        private readonly long last_exec = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+        private CreditsForm creditsForm;
+        private SettingsForm settingsForm;
+        // -->
 
         // https://github.com/LukasWestholt/MeetingInfo/tree/master/MeetingInfo
         public const string ADD_IN_NAME = "MeetingInfo";
@@ -34,161 +30,198 @@ namespace MeetingInfo
 
         public const string DEFAULT_TEXT_LABEL = "NULL";
         public const string DEFAULT_TEXT_SCREENTIP = "NULL";
+        public const string DEFAULT_TEXT_SUPERTEXT = "NULL";
         public const bool DEFAULT_STATE_VISIBLE = true;
-        public const string LANG = "de-DE";
-        private const int DEBUG = 1;
-        private readonly string[] DEBUG_TEXT = {"ERROR", "INFO", "DEBUG"};
+        private const int DEBUG = 2;
+        private readonly string[] DEBUG_TEXT = { "ERROR", "INFO", "DEBUG", "DEBUG+" };
 
+        private const string STRING_SEPERATOR = "; ";
+        private const string STRING_EXTENDER = "…"; // three dots away
 
+        private SettingsWrapper setting = new SettingsWrapper();
         private readonly System.Resources.ResourceManager resmgr = new System.Resources.ResourceManager("MeetingInfo.Properties.Resources", typeof(MeetingInfoMain).Assembly);
-        private readonly CultureInfo ci = new CultureInfo(LANG);
+        private CultureInfo ci;
 
         public Dictionary<Inspector, InspectorWrapper> InspectorWrappers { get; } = new Dictionary<Inspector, InspectorWrapper>();
         public Dictionary<Explorer, ExplorerWrapper> ExplorerWrappers { get; } = new Dictionary<Explorer, ExplorerWrapper>();
+
+        public void SetCultureInfo(string new_ci)
+        {
+            ci = new CultureInfo(new_ci);
+        }
 
         protected override IRibbonExtensibility CreateRibbonExtensibilityObject()
         {
             return _ribbon;
         }
 
-        private string I18n(string s)
+        public string I18n(string s)
         {
-            return resmgr.GetString(s, ci);
+            string str = resmgr.GetString(s, ci);
+            if (str == null) return s.ToLower().Replace("_", " ");
+            return str;
         }
 
-        public void CheckObject(Object selObject)
+        public bool Event(Object selObject)
         {
-            if (debugCheck(2))
+            bool result = CheckObject(selObject);
+            if (!result)
+            {
+                EverythingOnNull();
+            }
+            return result;
+        }
+
+        public bool CheckObject(Object selObject)
+        {
+            if (debugCheck(3))
             {
                 System.Media.SoundPlayer player = new System.Media.SoundPlayer(resmgr.GetStream("fgth_welcome", ci));
                 player.Play();
             }
 
-            // TODO merging AppointmentItem and MeetingItem??
-            if (selObject == null)
-            {
-                DPrint("selObject " + I18n("IS_NULL"), 0);
-            }
-            else if (selObject is AppointmentItem) // Kalenderliste + Doppel-klick auf Kalendereinträge
-            {   
-                DPrint(I18n("RECOGNIZED") + " - AppointmentItem", 2);
-                // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentItem#properties
-                AppointmentItem apptItem = (selObject as AppointmentItem);
-                if (apptItem != null && apptItem.EntryID != null)
-                {
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.organizer
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.getorganizer
-                    string Organizer_Name;
-                    AddressEntry Organizer_AdressEntry = apptItem.GetOrganizer();
-                    if (Organizer_AdressEntry != null && !String.IsNullOrEmpty(Organizer_AdressEntry.Name))
-                    {
-                        Organizer_Name = Organizer_AdressEntry.Name + " [" + I18n("ADDRESS_BOOK") + "]";
-                        // Organizer_Name = Organizer_AdressEntry.GetContact().FullName + " [Adressbuch]";
-                        // Organizer_AdressEntry.GetContact().Display();
-                        //Organizer_AdressEntry.Details();
-                        // TODO Anzeige von Namen + Mail-Adresse von Organizer
-                    }
-                    else
-                    {
-                        DPrint("GetOrganizer " + I18n("IS_EMPTY"), 1);
-                        Organizer_Name = apptItem.Organizer ?? "[" + I18n("ORGANIZER") + " " + I18n("IS_EMPTY") + "]";
-                    }
-                    if (Organizer_AdressEntry.Name != apptItem.Organizer) DPrint(Organizer_AdressEntry.Name + " / " + apptItem.Organizer, 2);
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.subject
-                    string Subject = apptItem.Subject ?? "[" + I18n("SUBJECT") + " " + I18n("IS_EMPTY") + "]";
+            // selObject=AppointmentItem => Kalenderliste + Doppel-klick auf Kalendereinträge
+            // selObject=MeetingItem => Meetings in Mailliste + Doppel-klick auf Mails
 
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.meetingstatus
-                    // bool isMeeting = (MeetingStatusToInt(apptItem.MeetingStatus) != 0);
+            /*
+            * The AppointmentItem object represents a meeting, a one-time appointment, or a recurring appointment or meeting in the Calendar folder.
+            * The AppointmentItem object includes methods that perform actions such as responding to or forwarding meeting requests, 
+            * and properties that specify meeting details such as the location and time.
+            * */
 
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentItem.recipients
-                    string[] output = Recipients(apptItem.Recipients, (Organizer_AdressEntry != null ? Organizer_AdressEntry.ID : ""));
-                    string RequiredAttendees = output[0]; // TODO is this without organizer?? testing with somebody
-                    string OptionalAttendees = output[1];
-                    
-                    //max 1024 characters.
-                    SetElement(new string[] {Subject, Organizer_Name, RequiredAttendees, OptionalAttendees }, 0);
-                    SetElement(new string[] { I18n("SUBJECT"), I18n("ORGANIZER"), I18n("REQUIRED_ATTENDEES"), I18n("OPTIONAL_ATTENDEES") }, 1);
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentItem.importance
-                    CheckImage((System.Drawing.Bitmap)resmgr.GetObject("important", ci), 0, MessgageImportanceToInt(apptItem.Importance) == 2);
-                    
-                }
-            }
-            else if (selObject is MeetingItem) // Meetings in Mailliste + Doppel-klick auf Mails
+            if (selObject is MeetingItem)
             {
                 DPrint(I18n("RECOGNIZED") + " - MeetingItem", 2);
-                // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem#properties
-                MeetingItem meetItem = (selObject as MeetingItem);
-                if (meetItem != null && meetItem.EntryID != null)
-                {
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.sendername
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.senderemailaddress
-                    string Organizer_Name;
-                    if (meetItem.SenderName != meetItem.SenderEmailAddress)
-                    {
-                        Organizer_Name = meetItem.SenderName + "/" + meetItem.SenderEmailAddress;
-                    }
-                    else
-                    {
-                        Organizer_Name = meetItem.SenderName;
-                    }
-                    // TODO why this and not above
+                selObject = (selObject as MeetingItem).GetAssociatedAppointment(false);
+            }
 
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.subject
-                    string Subject = meetItem.Subject ?? "[" + I18n("SUBJECT") + " " + I18n("IS_EMPTY") + "]";
+            if (!(selObject is AppointmentItem) || (selObject as AppointmentItem) == null || (selObject as AppointmentItem).EntryID == null) {
+                if (selObject == null) DPrint("selObject " + I18n("IS_NULL"), 0);
+                return false;
+            }
+            // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentItem#properties
+            AppointmentItem apptItem = (selObject as AppointmentItem);
+            // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.meetingstatus
+            bool isMeeting = (MeetingStatusToInt(apptItem.MeetingStatus) != 0);
+            DPrint(I18n("RECOGNIZED") + " - AppointmentItem: isMeeting=" + isMeeting.ToString(), 2);
 
-                    //https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.getassociatedappointment
-                    DPrint(meetItem.GetAssociatedAppointment(false).RequiredAttendees, 2);
-                    // TODO testing this and check results
-
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.recipients
-                    string[] output = Recipients(meetItem.Recipients, "");
-                    string RequiredAttendees = output[0];
-                    string OptionalAttendees = output[1];
-
-                    //max 1024 characters. TODO checking this out
-                    SetElement(new string[] { Subject, Organizer_Name, RequiredAttendees, OptionalAttendees }, 0);
-                    SetElement(new string[] { I18n("SUBJECT"), I18n("ORGANIZER"), I18n("REQUIRED_ATTENDEES"), I18n("OPTIONAL_ATTENDEES") }, 1);
-                    // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.importance
-                    CheckImage((System.Drawing.Bitmap)resmgr.GetObject("important", ci), 0, MessgageImportanceToInt(meetItem.Importance) == 2);
-                    
-
-                    // TODO WORK ON THIS NEW FEATURE
-                    /*if (!meetItem.Sent)
-                    {
-                        // https://docs.microsoft.com/de-de/office/vba/api/outlook.account
-                        
-                        Accounts accounts = Application.Session.Accounts;
-                        foreach (Account account in accounts)
-                        {
-                            // get selected account
-                        }
-                        meetItem.SendUsingAccount("<selected account>");
-                    }*/
-                }
+            // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.organizer
+            string Organizer_Name;
+            string Organizer_Full = null;
+            if (apptItem.Organizer == null && MeetingStatusToInt(apptItem.MeetingStatus) == 1)  // my own non-sended meeting, in this case GetOrganizer() is obsolete.
+            {
+                Organizer_Name = apptItem.SendUsingAccount.UserName;
+                DPrint("apptItem.SendUsingAccount.DisplayName=\"" + apptItem.SendUsingAccount.DisplayName + "\"", 2);
             }
             else
             {
-                // TODO is this working and needed? first start?
-                // TODO double exec??
-                if (last_exec + 500 < new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds())
+                // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.getorganizer
+                string[] result = AdressEntryNameExtract(apptItem.GetOrganizer());
+                if (result != null)
                 {
-                    SetElement(new string[] { null, null, null, null }, 0);
-                    SetElement(new string[] { null, null, null, null }, 1);
-                    CheckImage(null, 0, false);
+                    Organizer_Name = result[0];
+                    Organizer_Full = result[1];
+                }
+                else
+                {
+                    Organizer_Name = apptItem.Organizer;
                 }
             }
+            DPrint("apptItem.MeetingStatus=\"" + apptItem.MeetingStatus + "\"", 2);
+            if (apptItem.GetOrganizer().Name != apptItem.Organizer) DPrint("DIFF: apptItem.GetOrganizer().Name=\"" + apptItem.GetOrganizer().Name + "\" / apptItem.Organizer=\"" + apptItem.Organizer + "\"", 0);
+            Organizer_Name = Organizer_Name != null ? Organizer_Name : "[" + I18n("ORGANIZER") + " " + I18n("IS_EMPTY") + "]";
+            Organizer_Full = Organizer_Full != null ? Organizer_Full : Organizer_Name;
+
+            // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.subject
+            string Subject = apptItem.Subject;
+
+            // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentItem.recipients
+            string[] output = Recipients(apptItem.Recipients, (apptItem.GetOrganizer() != null ? apptItem.GetOrganizer().ID : ""));
+            //string[] output = Recipients(apptItem.Recipients, "");
+            // TODO testing is this without organizer?? testing with somebody
+            string RequiredAttendees_Names = output[0];
+            string OptionalAttendees_Names = output[1];
+            string RequiredAttendees_Full = output[2];
+            string OptionalAttendees_Full = output[3];
+            bool Acceptable = MeetingStatusToInt(apptItem.MeetingStatus) == 3;
+            int Importance = MessgageImportanceToInt(apptItem.Importance);
+            Subject = Subject ?? "[" + I18n("SUBJECT") + " " + I18n("IS_EMPTY") + "]";
+
+            SetElements(new string[] { Subject, Organizer_Name, RequiredAttendees_Names, OptionalAttendees_Names }, 0);
+            SetElements(new string[] { I18n("SUBJECT"), I18n("ORGANIZER"), I18n("REQUIRED_ATTENDEES"), I18n("OPTIONAL_ATTENDEES") }, 1);
+            SetElements(new string[] { Subject, Organizer_Full, RequiredAttendees_Full, OptionalAttendees_Full }, 2);
+            // https://docs.microsoft.com/de-de/office/vba/api/outlook.meetingitem.importance
+            CheckImage((System.Drawing.Bitmap)resmgr.GetObject("important", ci), 0, Importance == 2);
+            SetElement(Acceptable && setting.AcceptButton ? I18n("ACCEPT") : null, 4, 0);
+            SetElement(Acceptable && setting.AcceptButton ? I18n("ACCEPT") : null, 4, 1);
+            SetElement(Acceptable && setting.AcceptButton ? I18n("ACCEPT") : null, 4, 2);
+            SetElement(Acceptable && setting.AcceptButton ? apptItem : null, 4);
+            return true;
+        }
+
+        private void EverythingOnNull()
+        {
+            if (_ribbon.isLoaded()) // don't run this if the ribbon is not loaded yet, only after OnRibbonLoaded.
+            {
+                SetElements(new string[] { null, null, null, null }, 0);
+                SetElements(new string[] { null, null, null, null }, 1);
+                SetElements(new string[] { null, null, null, null }, 2);
+                CheckImage(null, 0, false);
+                SetElement(null, 4, 0);
+                SetElement(null, 4, 1);
+                SetElement(null, 4, 2);
+                SetElement(null, 4);
+            }
+            else
+            {
+                DPrint("ribbon is not loaded yet", 2);
+            }
+        }
+
+        private string[] AdressEntryNameExtract(AddressEntry addressEntry)
+        {
+            if (addressEntry == null) return null;
+            
+            string Name;
+            ContactItem contact = GetContact(addressEntry);
+
+            if (contact != null && !String.IsNullOrEmpty(contact.FullName))
+            {
+                Name = contact.FullName;
+            } else
+            {
+                Name = addressEntry.Name;
+            }
+            if (String.IsNullOrEmpty(Name)) return null;
+            return new[] {Name, Name + (!String.IsNullOrEmpty(addressEntry.Address) && !Name.ToLower().Contains(addressEntry.Address.ToLower()) ? " (" + addressEntry.Address + ")" : "")};
+        }
+
+        private ContactItem GetContact(AddressEntry addressEntry)
+        {
+            try
+            {
+                addressEntry.GetContact();
+            }
+            catch (System.Exception e)
+            {
+                DPrint(I18n("OUTDATED") + " AddressEntry info " + e.Message, 0);
+                return null;
+            }
+            return addressEntry.GetContact();
         }
 
         private string[] Recipients(Recipients recipients, string organisator_ID)
         {
-            string RequiredAttendees = "";
-            string OptionalAttendees = "";
-            const string STRING_SEPERATOR = "; ";
+            // RequiredAttendees_Names, OptionalAttendees_Names, RequiredAttendees_Full, OptionalAttendees_Full
+            string[] output = new string[] { "", "", "", "" };
             // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentItem.recipients
             foreach (Recipient recipient in recipients)
             {
+                AddressEntry adressEntry = recipient.AddressEntry;
                 // TODO Testing with somebody
-                if (recipient.AddressEntry.ID != organisator_ID)
+                //if(recipient.PropertyAccessor.GetProperty("http://schemas.microsoft.com/mapi/proptag/0x5FFD0003"))
+                //https://stackoverflow.com/questions/49927811/outlook-appointment-meeting-organizer-information-inconsistent
+                if (adressEntry.ID != organisator_ID)
                 {
                     // https://docs.microsoft.com/de-de/office/vba/api/outlook.recipient.resolve
                     bool resolved = recipient.Resolve();
@@ -197,47 +230,52 @@ namespace MeetingInfo
                     // https://docs.microsoft.com/de-de/office/vba/api/outlook.recipient.meetingresponsestatus
                     // TODO Mail-Adresse https://docs.microsoft.com/de-de/office/vba/api/outlook.recipient.address
 
-                    string text = (resolved ? recipient.AddressEntry.Name + " [" + I18n("ADDRESS_BOOK") +"]" : recipient.Name) +
+                    string[] result = AdressEntryNameExtract(adressEntry);
+                    string NamesText = (resolved & !String.IsNullOrEmpty(result[0]) ? result[0] : recipient.Name) + 
+                        (!String.IsNullOrEmpty(MeetingResponseToStr(recipient.MeetingResponseStatus)) ? " (" + MeetingResponseToStr(recipient.MeetingResponseStatus) + ")" : "");
+                    string FullText = (resolved & !String.IsNullOrEmpty(result[1]) ? result[1] : recipient.Name + " [" + I18n("NOT_FOUND_IN") + " " + I18n("ADDRESS_BOOK") + "]") +
                             (!String.IsNullOrEmpty(MeetingResponseToStr(recipient.MeetingResponseStatus)) ? " (" + MeetingResponseToStr(recipient.MeetingResponseStatus) + ")" : "");
 
                     // https://docs.microsoft.com/de-de/office/vba/api/outlook.recipient.type
-                    if (recipient.Type == 1)
+                    int x;
+                    if (recipient.Type != 2)
                     {
-                        // olRequired
-                        RequiredAttendees += text + STRING_SEPERATOR;
+                        if (recipient.Type != 1) DPrint("olOrganizer or olResource detected", 1);   // olOrganizer or olResource
+                        x = 0;  // olRequired
                     }
-                    else if (recipient.Type == 2)
+                    else  // olOptional
                     {
-                        // olOptional
-                        OptionalAttendees += text + STRING_SEPERATOR;
+                        x = 1;
                     }
-                    else
-                    {
-                        // olOrganizer or olResource
-                        RequiredAttendees += text + STRING_SEPERATOR;
-                        DPrint("olOrganizer or olResource detected", 1);
-                    }
+                    output[x] += NamesText + STRING_SEPERATOR;
+                    output[x+2] += FullText + STRING_SEPERATOR;
                 }
                 else
                 {
-                    DPrint("NOT WRITE CAUSE ORGA", 0);
+                    DPrint("The organisator was found in the recipients", 2);
                 }
             }
-            if (RequiredAttendees.Length > 1) RequiredAttendees = RequiredAttendees.Remove(RequiredAttendees.Length - STRING_SEPERATOR.Length);
-            if (OptionalAttendees.Length > 1) OptionalAttendees = OptionalAttendees.Remove(OptionalAttendees.Length - STRING_SEPERATOR.Length);
-            return new string[] { RequiredAttendees, OptionalAttendees };
+            for (int i = 0; i < output.Length; i++)
+            {
+                if (output[i].Length > 1) output[i] = output[i].Remove(output[i].Length - STRING_SEPERATOR.Length);
+            }
+            return output;
         }
 
         private void SetElement(string text, int label_int, int type)
         {
             if (!String.IsNullOrEmpty(text))
             {
+                if (text.Length > 1024) text = text.Substring(0, 1024-STRING_EXTENDER.Length) + STRING_EXTENDER;
+                // max 1024 characters on Label and Screentip. https://docs.microsoft.com/en-us/openspecs/office_standards/ms-customui/d104fcb2-6177-4eb9-a400-0a5f8ddcd539
                 if (type == 0)
                 {
+                    if (text.Length > setting.RibbonMaxWidth) text = text.Substring(0, setting.RibbonMaxWidth - STRING_EXTENDER.Length) + STRING_EXTENDER;
                     labels[label_int].Label = text;
                     labels[label_int].Visible = true;
                 }
                 if (type == 1) labels[label_int].Screentip = text;
+                if (type == 2) labels[label_int].Supertip = text;
             }
             else
             {
@@ -247,21 +285,28 @@ namespace MeetingInfo
                     labels[label_int].Visible = false;
                 }
                 if (type == 1) labels[label_int].Screentip = "";
+                if (type == 2) labels[label_int].Supertip = "";
             }
         }
 
-        private void SetElement(string[] texts, int type)
+        private void SetElements(string[] texts, int type)
         {
             foreach (KeyValuePair<int, ElementWrapper> entry in labels)
             {
+                if (texts.Length < entry.Key+1) break;  // non-entries in texts not edit
                 if (!String.IsNullOrEmpty(texts[entry.Key]))
                 {
+                    string text = texts[entry.Key];
+                    if (text.Length > 1024) text = text.Substring(0, 1024 - STRING_EXTENDER.Length) + STRING_EXTENDER;
+                    // max 1024 characters on Label and Screentip. https://docs.microsoft.com/en-us/openspecs/office_standards/ms-customui/d104fcb2-6177-4eb9-a400-0a5f8ddcd539
                     if (type == 0)
                     {
-                        entry.Value.Label = texts[entry.Key];
+                        if (text.Length > setting.RibbonMaxWidth) text = text.Substring(0, setting.RibbonMaxWidth - STRING_EXTENDER.Length) + STRING_EXTENDER;
+                        entry.Value.Label = text;
                         entry.Value.Visible = true;
                     }
-                    if (type == 1) entry.Value.Screentip = texts[entry.Key];
+                    if (type == 1) entry.Value.Screentip = text;
+                    if (type == 2) entry.Value.Supertip = text;
                 }
                 else
                 {
@@ -271,31 +316,59 @@ namespace MeetingInfo
                         entry.Value.Visible = false;
                     }
                     if (type == 1) entry.Value.Screentip = "";
+                    if (type == 2) entry.Value.Supertip = "";
                 }
             }
         }
 
-        private void SetElementImage(System.Drawing.Bitmap img, int label_int)
+        private void SetElement(AppointmentItem apptItem, int label_int)
         {
-            labels[label_int].Image = img;
+            labels[label_int].AppointmentItem = apptItem;
         }
 
         private void CheckImage(System.Drawing.Bitmap img, int label_int, bool show_img)
         {
             if (show_img)
             {
-                SetElementImage(img, label_int);
+                labels[label_int].Image = img;
             }
             else
             {
-                SetElementImage(null, label_int);
+                labels[label_int].Image = null;
             }
         }
 
+        public void OnAction(IRibbonControl ribbonUI)
+        {
+            if (ribbonUI.Id.ToLower() == "buttoncredits")
+            {
+                creditsForm = new CreditsForm();
+                creditsForm.CreditsViewer.DocumentText = (string)resmgr.GetObject("Credits", ci);
+                creditsForm.Show();
+            } else if (ribbonUI.Id.ToLower() == "buttonsettings")
+            {
+                settingsForm = new SettingsForm(setting, ci);
+                settingsForm.TextBoxLanguage.Text = setting.Language;
+                settingsForm.CheckBoxMeetingAcceptButton.Checked = setting.AcceptButton;
+                settingsForm.NumericUpDownRibbonMaxWidth.Value = setting.RibbonMaxWidth;
+                settingsForm.Show();
+            } else if (new []{"label11", "label22", "label33", "label44" }.Contains(ribbonUI.Id.ToLower()))
+            {
+                // nothing
+            } else if (new[] { "directaccept1", "directaccept2", "directaccept3", "directaccept4" }.Contains(ribbonUI.Id.ToLower()))
+            {
+                // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.respond
+                // https://docs.microsoft.com/en-us/office/client-developer/outlook/pia/how-to-automatically-accept-a-meeting-request
+                MeetingItem meetItem = labels[4].AppointmentItem.Respond(OlMeetingResponse.olMeetingAccepted, true);
+                DPrint(meetItem, 2);
+                meetItem.Send();
+            }
+        }
         private string MeetingResponseToStr(OlResponseStatus response)
         {
             // https://docs.microsoft.com/de-de/office/vba/api/outlook.olresponsestatus
-            switch (response) {
+            switch (response)
+            {
                 case OlResponseStatus.olResponseNone:
                     return "";
                 case OlResponseStatus.olResponseOrganized:
@@ -359,8 +432,16 @@ namespace MeetingInfo
             ExplorerWrappers.Add(exp, new ExplorerWrapper(exp));
         }
 
-        private void DPrint(string str, int debugMode)
+        private void DPrint(object obj, int debugMode = 1)
         {
+            String str;
+            if (obj == null)
+            {
+                str = "NULL";
+            } else
+            {
+                str = obj.ToString();
+            }
             if (debugCheck(debugMode)) System.Diagnostics.Debug.WriteLine("[" + ADD_IN_NAME + "] " + I18n(DEBUG_TEXT[debugMode]) + ": " + str);
         }
 
@@ -372,6 +453,8 @@ namespace MeetingInfo
 
         private void MeetingInfoMain_Startup(object sender, System.EventArgs e)
         {
+            ci = new CultureInfo(setting.Language);
+
             inspectors = this.Application.Inspectors;
             inspectors.NewInspector +=
                 new InspectorsEvents_NewInspectorEventHandler(Inspectors_NewInspector);
@@ -386,17 +469,12 @@ namespace MeetingInfo
                 { 0, _ribbon.Label1 },
                 { 1, _ribbon.Label2 },
                 { 2, _ribbon.Label3 },
-                { 3, _ribbon.Label4 }
+                { 3, _ribbon.Label4 },
+                { 4, _ribbon.DirectAccept },
             };
 
             DPrint("Assembly full name:\n   " + typeof(MeetingInfoMain).Assembly.FullName, 2);
             DPrint("Assembly qualified name:\n   " + typeof(MeetingInfoMain).AssemblyQualifiedName, 2);
-        }
-
-        private void MeetingInfoMain_Shutdown(object sender, System.EventArgs e)
-        {
-            // Hinweis: Outlook löst dieses Ereignis nicht mehr aus. Wenn Code vorhanden ist, der 
-            //    muss ausgeführt werden, wenn Outlook heruntergefahren wird. Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?LinkId=506785.
         }
 
         #region Von VSTO generierter Code
@@ -408,7 +486,6 @@ namespace MeetingInfo
         private void InternalStartup()
         {
             this.Startup += new System.EventHandler(MeetingInfoMain_Startup);
-            this.Shutdown += new System.EventHandler(MeetingInfoMain_Shutdown);
         }
 
         #endregion

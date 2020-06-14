@@ -1,10 +1,18 @@
+# my edits
 dx_sample/
 old-versions/
 things/
 Tests/
 *.docx
+*.xlsx
+
+# DevTracker
+Devtracker.Dump
+MeetingInfo.dt
+
 Outlook-Anpassungen (olkexplorer).exportedUI
 
+# my edits end
 
 # Created by https://www.gitignore.io/api/visualstudio
 # Edit at https://www.gitignore.io/?templates=visualstudio

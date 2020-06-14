@@ -4,8 +4,10 @@
     {
         private string _label = string.Empty;
         private string _screentip = string.Empty;
+        private string _supertip = string.Empty;
         private bool _visible = true;
         private System.Drawing.Bitmap _image;
+        private Microsoft.Office.Interop.Outlook.AppointmentItem _apptItem;
         private readonly Ribbon _ribbon;
 
         public ElementWrapper(Ribbon _ribbon)
@@ -51,6 +53,25 @@
             }
         }
 
+        public string Supertip
+        {
+            get
+            {
+                if (_supertip != string.Empty)
+                    return _supertip;
+                else
+                    return "NULL";
+            }
+            set
+            {
+                if (_supertip != value)
+                {
+                    _supertip = value;
+                    Update();
+                }
+            }
+        }
+
         public bool Visible
         {
             get
@@ -79,6 +100,21 @@
                 {
                     _image = value;
                     Update();
+                }
+            }
+        }
+
+        public Microsoft.Office.Interop.Outlook.AppointmentItem AppointmentItem
+        {
+            get
+            {
+                return _apptItem;
+            }
+            set
+            {
+                if (_apptItem != value)
+                {
+                    _apptItem = value;
                 }
             }
         }

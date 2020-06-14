@@ -16,14 +16,15 @@ namespace MeetingInfo
 
             ((InspectorEvents_10_Event)inspector).Activate += new InspectorEvents_10_ActivateEventHandler(InspectorWrapper_Activate);
 
-            Globals.MeetingInfoMain.CheckObject(inspector.CurrentItem);
+            Globals.MeetingInfoMain.Event(inspector.CurrentItem);
+            last_exec = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
         }
 
         void InspectorWrapper_Activate()
         {
-            if (last_exec + 250 < new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds())
+            if (last_exec + 500 < new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds())
             {
-                Globals.MeetingInfoMain.CheckObject(inspector.CurrentItem);
+                Globals.MeetingInfoMain.Event(inspector.CurrentItem);
                 last_exec = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             }
         }

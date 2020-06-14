@@ -1,23 +1,52 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="OnRibbonLoaded">
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="OnRibbonLoaded">
   <ribbon>
     <tabs>
       <tab idMso="TabAppointment">
-        <group id="group1" label="Meeting">
-          <button id="label1" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
-          <button id="label11" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
-          <button id="label111" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
-          <button id="label1111" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+        <group id="group1" getLabel="Group_GetLabel" centerVertically="true">
+          <button id="label1" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label11" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" onAction="OnAction" />
+          <button id="label111" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label1111" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="directAccept1" size="large" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" imageMso="AcceptInvitation" onAction="OnAction" />
         </group>
       </tab>
       <tab idMso="TabReadMessage">
-        <group id="group2" label="Meeting">
-          <button id="label2" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
-          <button id="label22" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
-          <button id="label222" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
-          <button id="label2222" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetLabel" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+        <group id="group2" getLabel="Group_GetLabel" centerVertically="true">
+          <button id="label2" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label22" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" onAction="OnAction" />
+          <button id="label222" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="label2222" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" getImage="OnGetImage" getShowImage="OnGetShowImage" />
+          <button id="directAccept2" size="large" getLabel="OnGetLabel" getVisible="OnGetVisible" getScreentip="OnGetScreentip" getSupertip="OnGetSupertip" imageMso="AcceptInvitation" onAction="OnAction" />
         </group>
       </tab>
     </tabs>
   </ribbon>
+  <backstage>
+    <tab id="TabMeetingInfo" getLabel="TabMeetingInfo_GetLabel" columnWidthPercent="30" insertAfterMso="TabPrint" visible="true">
+      <firstColumn>
+        <group id="grpSeperator">
+        </group>
+        <group id="GroupSettings">
+          <primaryItem>
+            <button id="ButtonSettings" getLabel="Group_GetLabel" onAction="OnAction"/>
+          </primaryItem>
+        </group>
+        <group id="GroupCredits">
+          <primaryItem>
+            <button id="ButtonCredits" getLabel="Group_GetLabel" onAction="OnAction"/>
+          </primaryItem>
+        </group>
+      </firstColumn>
+      <secondColumn>
+        <group id="GroupInfo" getLabel="Group_GetLabel">
+          <topItems>
+            <labelControl id="lblInfo" getLabel="Group_GetLabel" />
+            <hyperlink id="linkDownload" label="MeetingInfo" target="https://github.com/LukasWestholt/MeetingInfo" />
+            <hyperlink id="linkMail" label="Mail me" target="mailto:support@lukaswestholt.de" />
+          </topItems>
+        </group>
+      </secondColumn>
+    </tab>
+  </backstage>
 </customUI>

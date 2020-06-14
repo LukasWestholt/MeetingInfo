@@ -117,30 +117,42 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ACCEPT" xml:space="preserve">
+    <value>Accept</value>
+  </data>
   <data name="ACCEPTED" xml:space="preserve">
     <value>accepted</value>
   </data>
   <data name="ADDRESS_BOOK" xml:space="preserve">
     <value>address book</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Credits" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\credits.html;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
   <data name="DECLINED" xml:space="preserve">
     <value>declined</value>
+  </data>
+  <data name="DEVELOPED_BY" xml:space="preserve">
+    <value>developed by</value>
   </data>
   <data name="ERROR" xml:space="preserve">
     <value>ERROR</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="fgth_welcome" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\fgth_welcome.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="important" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\important.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>..\resources\important.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="IS_EMPTY" xml:space="preserve">
     <value>is empty</value>
   </data>
   <data name="IS_NULL" xml:space="preserve">
     <value>is null</value>
+  </data>
+  <data name="NOT_FOUND_IN" xml:space="preserve">
+    <value>not found in</value>
   </data>
   <data name="ON" xml:space="preserve">
     <value>on</value>
@@ -150,6 +162,9 @@
   </data>
   <data name="ORGANIZER" xml:space="preserve">
     <value>organizer</value>
+  </data>
+  <data name="OUTDATED" xml:space="preserve">
+    <value>outdated</value>
   </data>
   <data name="PLEASE_DEACTIVATE_THIS_ADD-IN" xml:space="preserve">
     <value>Please deactivate this add-in</value>
@@ -168,8 +183,5 @@
   </data>
   <data name="TENTATIVELY" xml:space="preserve">
     <value>tentatively</value>
-  </data>
-  <data name="World" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\World.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

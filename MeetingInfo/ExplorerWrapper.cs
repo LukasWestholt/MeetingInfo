@@ -23,8 +23,10 @@ namespace MeetingInfo
         {
             if (explorer.Selection.Count == 1 && last_exec + 250 < new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds())
             {
+                // TODO wenn doppelklick auf meeting mail der erste klick führt das hier aus, deswegen double exec of CheckObject
+                // if (explorer != Globals.MeetingInfoMain.Application.ActiveExplorer()) return;
                 Object selObject = explorer.Selection[1];
-                Globals.MeetingInfoMain.CheckObject(selObject);
+                Globals.MeetingInfoMain.Event(selObject);
                 last_exec = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             }
         }
