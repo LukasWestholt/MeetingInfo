@@ -5,8 +5,8 @@ namespace MeetingInfo
 {
     public partial class SettingsForm : Form
     {
-        private SettingsWrapper _settings;
-        private System.Globalization.CultureInfo _cultureInfo;
+        private readonly SettingsWrapper _settings;
+        private readonly System.Globalization.CultureInfo _cultureInfo;
         public SettingsForm(SettingsWrapper settings, System.Globalization.CultureInfo cultureInfo)
         {
             _cultureInfo = cultureInfo;

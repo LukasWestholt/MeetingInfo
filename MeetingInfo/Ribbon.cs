@@ -65,7 +65,7 @@ namespace MeetingInfo
             }
         }
 
-        public bool isLoaded()
+        public bool IsLoaded()
         {
             return this._isLoaded;
         }

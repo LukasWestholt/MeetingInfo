@@ -6,7 +6,7 @@
         {
             Language = string.IsNullOrEmpty(Properties.Settings.Default.Language) ? System.Globalization.CultureInfo.InstalledUICulture.Name : Properties.Settings.Default.Language;
             AcceptButton = Properties.Settings.Default.AcceptButton;
-            RibbonMaxWidth = checkWidth(Properties.Settings.Default.RibbonMaxWidth == 0 ? 240 : Properties.Settings.Default.RibbonMaxWidth);
+            RibbonMaxWidth = CheckWidth(Properties.Settings.Default.RibbonMaxWidth == 0 ? 240 : Properties.Settings.Default.RibbonMaxWidth);
             // TODO get window width calculator 0-1024 chars
             // Explorer.Width
             // https://docs.microsoft.com/de-de/dotnet/api/microsoft.office.interop.outlook._explorer.width?view=outlook-pia#Microsoft_Office_Interop_Outlook__Explorer_Width
@@ -54,14 +54,14 @@
         public bool SetRibbonMaxWidth(int value)
         {
             if (RibbonMaxWidth == value) return true;
-            value = checkWidth(value);
+            value = CheckWidth(value);
             RibbonMaxWidth = value;
             Properties.Settings.Default.RibbonMaxWidth = value;
             SaveUserSettings();
             return true;
         }
 
-        private int checkWidth(int i)
+        private int CheckWidth(int i)
         {
             if (i < 0) return 0;
             if (i > 1024) return 1024;

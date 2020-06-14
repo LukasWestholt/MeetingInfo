@@ -38,7 +38,7 @@ namespace MeetingInfo
         private const string STRING_SEPERATOR = "; ";
         private const string STRING_EXTENDER = "…"; // three dots away
 
-        private SettingsWrapper setting = new SettingsWrapper();
+        private readonly SettingsWrapper setting = new SettingsWrapper();
         private readonly System.Resources.ResourceManager resmgr = new System.Resources.ResourceManager("MeetingInfo.Properties.Resources", typeof(MeetingInfoMain).Assembly);
         private CultureInfo ci;
 
@@ -74,7 +74,7 @@ namespace MeetingInfo
 
         public bool CheckObject(Object selObject)
         {
-            if (debugCheck(3))
+            if (DebugCheck(3))
             {
                 System.Media.SoundPlayer player = new System.Media.SoundPlayer(resmgr.GetStream("fgth_welcome", ci));
                 player.Play();
@@ -129,8 +129,8 @@ namespace MeetingInfo
             }
             DPrint("apptItem.MeetingStatus=\"" + apptItem.MeetingStatus + "\"", 2);
             if (apptItem.GetOrganizer().Name != apptItem.Organizer) DPrint("DIFF: apptItem.GetOrganizer().Name=\"" + apptItem.GetOrganizer().Name + "\" / apptItem.Organizer=\"" + apptItem.Organizer + "\"", 0);
-            Organizer_Name = Organizer_Name != null ? Organizer_Name : "[" + I18n("ORGANIZER") + " " + I18n("IS_EMPTY") + "]";
-            Organizer_Full = Organizer_Full != null ? Organizer_Full : Organizer_Name;
+            Organizer_Name = Organizer_Name ?? "[" + I18n("ORGANIZER") + " " + I18n("IS_EMPTY") + "]";
+            Organizer_Full = Organizer_Full ?? Organizer_Name;
 
             // https://docs.microsoft.com/de-de/office/vba/api/outlook.appointmentitem.subject
             string Subject = apptItem.Subject;
@@ -161,7 +161,7 @@ namespace MeetingInfo
 
         private void EverythingOnNull()
         {
-            if (_ribbon.isLoaded()) // don't run this if the ribbon is not loaded yet, only after OnRibbonLoaded.
+            if (_ribbon.IsLoaded()) // don't run this if the ribbon is not loaded yet, only after OnRibbonLoaded.
             {
                 SetElements(new string[] { null, null, null, null }, 0);
                 SetElements(new string[] { null, null, null, null }, 1);
@@ -442,10 +442,10 @@ namespace MeetingInfo
             {
                 str = obj.ToString();
             }
-            if (debugCheck(debugMode)) System.Diagnostics.Debug.WriteLine("[" + ADD_IN_NAME + "] " + I18n(DEBUG_TEXT[debugMode]) + ": " + str);
+            if (DebugCheck(debugMode)) System.Diagnostics.Debug.WriteLine("[" + ADD_IN_NAME + "] " + I18n(DEBUG_TEXT[debugMode]) + ": " + str);
         }
 
-        private bool debugCheck(int debugMode)
+        private bool DebugCheck(int debugMode)
         {
             // true when debugMode is lower/equal then DEBUG
             return (debugMode <= DEBUG);
