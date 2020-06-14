@@ -651,7 +651,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:MeetingInfo V.1"
         "ProductCode" = "8:{71997E2C-A29D-49F2-A924-5937CCEE9E19}"
-        "PackageCode" = "8:{C04A28EF-A43B-4504-8D3E-092AE5354BE4}"
+        "PackageCode" = "8:{2AFC2D75-2405-42B5-B5AE-A86A75158760}"
         "UpgradeCode" = "8:{9193E2E4-EEB0-4738-AF82-00B0753AD7EA}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -1232,7 +1232,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_2C333FBE722848D5A87DE557E149CE34"
             {
-            "SourcePath" = "8:..\\MeetingInfo\\obj\\Debug\\MeetingInfo.dll"
+            "SourcePath" = "8:..\\MeetingInfo\\obj\\Release\\MeetingInfo.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5915B5D4AB454623B854E9A9A49289E9"
