@@ -10,8 +10,19 @@ namespace MeetingInfo
     public partial class MeetingInfoMain
     {
         // TODO meeting in mailinglist no ribbon problem
-        // TODO BUILD https://docs.microsoft.com/de-de/visualstudio/vsto/deploying-a-vsto-solution-by-using-windows-installer?view=vs-2019
         // TODO Im Kalender von Jahr zu Jahr "springen"
+        // TODO check checkObject multiply run? everything clear?
+        // benutzerdefinierte Serie
+        // Outlook 2016 Termin senden "von" bearbeiten/Auswahl (so wie bei Email)
+        // Signatur direkt einfügen (so wie bei Email)
+        // 2x Signatur direkt einfügen (so wie bei Email)
+        // "Von" auswählen bei Meeting Outlook 2016
+
+
+        // TODO BUILD https://docs.microsoft.com/de-de/visualstudio/vsto/deploying-a-vsto-solution-by-using-windows-installer?view=vs-2019
+        // Admin?
+        // globalization?
+        // auto build in right path
 
         private readonly Ribbon _ribbon = new Ribbon();
 
